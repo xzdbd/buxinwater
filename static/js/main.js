@@ -21,6 +21,7 @@ require([
   "esri/core/watchUtils",
   "esri/layers/FeatureLayer",
   "esri/layers/MapImageLayer",
+  "esri/layers/TileLayer",
   "esri/symbols/PictureMarkerSymbol",
   "esri/symbols/SimpleLineSymbol",
   "esri/symbols/SimpleFillSymbol",
@@ -63,11 +64,12 @@ require([
   // Dojo
   "dojo/domReady!"
 ], function (Map, Basemap, VectorTileLayer, MapView, SceneView, Search, Popup, Home, Legend, ColorPicker,
-  watchUtils, FeatureLayer, MapImageLayer, PictureMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, QueryTask, Query, GraphicsLayer, Geoprocessor, FeatureSet, Field, PopupTemplate, query, domClass, dom, on, domConstruct, date, locale, request, declare, domStyle, fx, keys, html, Cedar, CalciteMapsSettings) {
+  watchUtils, FeatureLayer, MapImageLayer, TileLayer, PictureMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, QueryTask, Query, GraphicsLayer, Geoprocessor, FeatureSet, Field, PopupTemplate, query, domClass, dom, on, domConstruct, date, locale, request, declare, domStyle, fx, keys, html, Cedar, CalciteMapsSettings) {
 
     app = {
-      scale: 18056,
-      lonlat: [360.0274827400441, -0.021760830968962627],
+      scale: null,
+      zoom: 1,
+      lonlat: [122.08430074842634, 42.316065175469994],
       mapView: null,
       mapDiv: "mapViewDiv",
       mapFL: null,
@@ -82,6 +84,8 @@ require([
       basemapSelected: "topo",
       basemapSelectedAlt: "topo",
       legendLayer: null,
+      graphicsLayer: null,
+      highlightGraphicsLayer: null,
       legend: null,
       padding: {
         top: 85,
@@ -116,7 +120,7 @@ require([
     //----------------------------------
     initializeLoadingOverlay();
     initializeMapViews();
-    //initializeStationLayer();
+    initializeStationLayer();
     initializeAppUI();
 
 
@@ -162,12 +166,14 @@ require([
 
     function initializeMapViews() {
       // define basemap
-
+      var fuxinwaterBasemap = new TileLayer({
+        url: "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater/MapServer"
+      });
 
       app.mapView = new MapView({
         container: app.mapDiv,
-        map: new Map({ basemap: app.basemapSelected, constraints: { snapToZoom: false } }),
-        scale: app.scale,
+        map: new Map({ layers: [fuxinwaterBasemap] }),
+        zoom: app.zoom,
         center: app.lonlat,
         padding: app.padding,
         ui: app.uiPadding,
@@ -175,135 +181,114 @@ require([
         visible: true
       })
 
+      var homeWidget = new Home({
+        view: app.mapView
+      });
+
+      // adds the home widget to the top left corner of the MapView
+      app.mapView.ui.add(homeWidget, "top-left");
+
       app.activeView = app.mapView;
 
       app.mapView.then(function () {
-        // TO-DO change it to tiled layer
-        var fuxinwaterBasemap = new MapImageLayer({
-          url: "https://gis.xzdbd.com/arcgis/rest/services/dev/buxinwater/MapServer"
-        });
-        app.mapView.map.add(fuxinwaterBasemap);
-
-        // remove loading
         app.loading.endLoading();
+        // popup detail content
+        app.mapView.popup.on("trigger-action", function (e) {
+          if (e.action.id == "detail") {
+            showPollutionDeatils();
+          }
+        });
+
+        // update detail info
+        app.mapView.on("click", function (e) {
+          console.log("view click")
+          var screenPoint = {
+            x: e.x,
+            y: e.y
+          };
+
+          //app.mapView.hitTest(screenPoint).then(updateDetailInfo);
+        });
       });
     }
 
     //----------------------------------
-    // Pollution Station GraphicsLayer
+    // Rain Station GraphicsLayer
     //----------------------------------
 
     function initializeStationLayer() {
+      var rainDate = query("#waterStationDate")[0].value;
       var graphicsLayer = new GraphicsLayer();
-      var layer = "https://gis.xzdbd.com/arcgis/rest/services/prod/PollutionStation/MapServer/0";
-      var goodSymbol = new PictureMarkerSymbol({
-        url: "/static/images/good.png",
-        width: "56px",
-        height: "70px",
+      app.graphicsLayer = graphicsLayer;
+      var highlightGraphicsLayer = new GraphicsLayer();
+      app.highlightGraphicsLayer = highlightGraphicsLayer;
+      var rainStationSymbol = new PictureMarkerSymbol({
+        url: "./static/images/rain.png",
+        width: "30px",
+        height: "37.5px",
       });
-      var fineSymbol = new PictureMarkerSymbol({
-        url: "/static/images/fine.png",
-        width: "56px",
-        height: "70px",
-      });
-      var slightSymbol = new PictureMarkerSymbol({
-        url: "/static/images/slight.png",
-        width: "56px",
-        height: "70px",
-      });
-      var mediumSymbol = new PictureMarkerSymbol({
-        url: "/static/images/medium.png",
-        width: "56px",
-        height: "70px",
-      });
-      var heavySymbol = new PictureMarkerSymbol({
-        url: "/static/images/heavy.png",
-        width: "56px",
-        height: "70px",
-      });
-      var severeSymbol = new PictureMarkerSymbol({
-        url: "/static/images/severe.png",
-        width: "56px",
-        height: "70px",
-      });
+
       var template = {
-        title: "<font color='#008000'>监测站：{name}",
+        title: "<font color='#008000'>监测站：{站名}",
 
         content: [{
           type: "fields",
           fieldInfos: [{
-            fieldName: "aqi",
+            fieldName: "站码",
             visible: true,
-            label: "AQI",
+            label: "站码",
+          }, /*{
+            fieldName: "JYL",
+            visible: true,
+            label: "雨量",
             format: {
-              places: 0,
+              places: 2,
               digitSeparator: true
-            },
-          }, {
-            fieldName: "quality",
+            }
+          }, */{
+            fieldName: "站名",
             visible: true,
-            label: "当前空气质量",
+            label: "站名",
           }, {
-            fieldName: "primary_pollutant",
+            fieldName: "乡镇",
             visible: true,
-            label: "主要污染物",
-          },
-          ]
-        }, {
-          type: "text",
-          text: "数据更新时间：{time:DateFormat(datePattern: 'yyyy-MM-d', timePattern: 'HH:mm')}",
+            label: "乡镇",
+          }, {
+            fieldName: "地点",
+            visible: true,
+            label: "地点",
+          }],
         }],
-
         actions: [{
           title: "详情",
           id: "detail",
           className: "esri-icon-dashboard",
         }]
       };
+
+      var layer = "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater/MapServer/0";
       var queryTask = new QueryTask({
         url: layer
       });
-      var query = new Query();
-      query.returnGeometry = true;
-      query.outFields = ["*"];
-      query.where = "1=1";
+      var query1 = new Query();
+      query1.returnGeometry = true;
+      query1.outFields = ["*"];
+      query1.where = "1=1";
 
-      queryTask.execute(query, { cacheBust: false }).then(function (result) {
+      queryTask.execute(query1, { cacheBust: false }).then(function (result) {
         if (result.features.length > 0) {
           result.features.forEach(function (graphic) {
-            quality = graphic.getAttribute("quality");
-            switch (quality) {
-              case "优":
-                graphic.symbol = goodSymbol;
-                break;
-              case "良":
-                graphic.symbol = fineSymbol;
-                break;
-              case "轻度污染":
-                graphic.symbol = slightSymbol;
-                break;
-              case "中度污染":
-                graphic.symbol = mediumSymbol;
-                break;
-              case "重度污染":
-                graphic.symbol = heavySymbol;
-                break;
-              case "严重污染":
-                graphic.symbol = severeSymbol;
-                break;
-              default:
-                graphic.symbol = goodSymbol;
-                break;
-            }
+            graphic.symbol = rainStationSymbol;
             graphic.popupTemplate = template;
             graphicsLayer.add(graphic);
           });
-          app.mapView.map.layers.add(graphicsLayer);
+          app.mapView.map.add(graphicsLayer);
           // remove loading
           app.loading.endLoading();
         }
       });
     }
+
 
     //----------------------------------
     // Pollution Details Handler
@@ -321,7 +306,7 @@ require([
 
     function initializeAppUI() {
       // App UI
-      //setBasemapEvents();
+      setBasemapEvents();
       setSearchWidgets();
       setPopupPanelEvents();
       setPopupEvents();
@@ -509,38 +494,193 @@ require([
     //----------------------------------
     function setQueryEvents() {
       // show feature layer when panel opens
-      query(".calcite-panels .panel").on("show.bs.collapse", function (e) {
-        // TODO: switch case
-        console.log(e.target.id);
-        showQueryLayer(0);
+      query(".calcite-panels #panelWaterStation").on("show.bs.collapse", function (e) {
+        console.log("panelWaterStation")
+        updateGraphicsLayer();
+
       });
 
       // hide feature layer when panel closes
       query(".calcite-panels .panel").on("hide.bs.collapse", function (e) {
         // TODO: switch case
         console.log(e.target.id);
-        hideQueryLayer(0);
       });
 
-      query("#adminBuildingSearchDiv_input").on("keydown", function (event) {
+      // search input enter event, update graphicsLayer
+      query("#waterStationSearchInput").on("keydown", function (event) {
         if (event.keyCode == keys.ENTER) {
-          console.log(event.target.value);
-          queryUnivercityLayer(event.target.value, 0);
+          updateGraphicsLayer();
+        }
+      });
+
+      // date control change event, update graphicsLayer
+      query("#waterStationDate").on("change", function (event) {
+        updateGraphicsLayer();
+      });
+
+    }
+
+    function highlightSelectedGraphic(e) {
+      highlightGraphicsLayer = app.highlightGraphicsLayer;
+      highlightGraphicsLayer.removeAll();
+      app.mapView.map.layers.remove(highlightGraphicsLayer);
+      stationName = e.target.parentElement.firstElementChild.innerHTML;
+      app.graphicsLayer.graphics.forEach(function (graphic) {
+        if (graphic.attributes.站名 == stationName) {
+          graphic.symbol = new PictureMarkerSymbol({
+            url: "./static/images/rain-highlight2.png",
+            width: "35px",
+            height: "43.8px",
+          });
+          highlightGraphicsLayer.add(graphic);
+          app.mapView.map.layers.add(highlightGraphicsLayer);
+          app.mapView.goTo({
+            target: graphic,
+            zoom: 3
+          });
+          app.mapView.scale = 85598.60063542379;
         }
       });
     }
 
-    function showQueryLayer(layerId) {
-      var layer = new FeatureLayer({
-        url: "https://gis.xzdbd.com/arcgis/rest/services/dev/university/MapServer/" + layerId,
-        id: layerId
+    function updateGraphicsLayer() {
+      // remove graphics
+      app.mapView.map.remove(app.graphicsLayer);
+      app.mapView.map.layers.remove(app.highlightGraphicsLayer);
+
+      var keywords = query("#waterStationSearchInput")[0].value;
+      var rainDate = query("#waterStationDate")[0].value;
+
+      var graphicsLayer = new GraphicsLayer();
+      app.graphicsLayer = graphicsLayer;
+      var rainStationSymbol = new PictureMarkerSymbol({
+        url: "./static/images/rain.png",
+        width: "30px",
+        height: "37.5px",
       });
-      app.mapView.map.layers.add(layer);
+
+      var template = {
+        title: "<font color='#008000'>监测站：{站名}",
+
+        content: [{
+          type: "fields",
+          fieldInfos: [{
+            fieldName: "站码",
+            visible: true,
+            label: "站码",
+          }, /*{
+            fieldName: "JYL",
+            visible: true,
+            label: "雨量",
+            format: {
+              places: 2,
+              digitSeparator: true
+            }
+          }, */{
+            fieldName: "站名",
+            visible: true,
+            label: "站名",
+          }, {
+            fieldName: "乡镇",
+            visible: true,
+            label: "乡镇",
+          }, {
+            fieldName: "地点",
+            visible: true,
+            label: "地点",
+          }],
+        }],
+        actions: [{
+          title: "详情",
+          id: "detail",
+          className: "esri-icon-dashboard",
+        }]
+      };
+
+      var layer = "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater/MapServer/0";
+      var queryTask = new QueryTask({
+        url: layer
+      });
+      var query1 = new Query();
+      query1.returnGeometry = true;
+      query1.outFields = ["*"];
+
+      if (keywords != "" && !isNaN(keywords)) {
+        query1.where = "站码 = " + keywords + " OR 站名 like '%" + keywords + "%'";
+      } else {
+        query1.where = "站名 like '%" + keywords + "%'";
+      }
+
+
+      queryTask.execute(query1, { cacheBust: false }).then(function (result) {
+        if (result.features.length > 0) {
+          initResultGrid(result.features, rainDate);
+          //html.set(query("#waterStation-info-table")[0], htmlTemplate);
+          result.features.forEach(function (graphic) {
+            graphic.symbol = rainStationSymbol;
+            graphic.popupTemplate = template;
+            graphicsLayer.add(graphic);
+          });
+          app.mapView.map.add(graphicsLayer);
+          // remove loading
+          app.loading.endLoading();
+        } else {
+          html.set(query("#waterStation-info-table")[0], "<p>未找到站点信息</p>");
+        }
+      });
+
     }
 
-    function hideQueryLayer(layerId) {
-      var layer = app.mapView.map.findLayerById(layerId)
-      app.mapView.map.layers.remove(layer);
+    function initResultGrid(features, rainDate) {
+      var gridHtml = '<tbody>';
+      gridHtml += '<tr>' +
+        '<th class="success">站名</th>' +
+        '<th class="success">雨量</th>' +
+        '<th class="success">日期</th>' +
+        '</tr>';
+
+      var stationIds = "";
+      // get all stationIds
+      features.forEach(function (feature) {
+        stationIds += feature.attributes.站码 + ",";
+      });
+      stationIds = stationIds.substr(0, stationIds.length - 2);
+
+      //query rain info
+      var layer = "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater/MapServer/8";
+      var queryTask = new QueryTask({
+        url: layer
+      });
+      var queryRain = new Query();
+      queryRain.returnGeometry = false;
+      queryRain.outFields = ["*"];
+      queryRain.where = "站号 in (" + stationIds + ") and 日期 = timestamp '" + rainDate + "'";
+
+      queryTask.execute(queryRain).then(function (result) {
+        if (result.features.length > 0) {
+          result.features.forEach(function (feature) {
+            gridHtml += '<tr>' +
+              '<td>' + feature.attributes.站名 + '</td>' +
+              '<td>' + feature.attributes.雨量 + '</td>' +
+              '<td>' + rainDate + '</td>' +
+              '</tr>';
+          });
+        } else {
+          features.forEach(function (feature) {
+            gridHtml += '<tr>' +
+              '<td>' + feature.attributes.站名 + '</td>' +
+              '<td>' + 0 + '</td>' +
+              '<td>' + rainDate + '</td>' +
+              '</tr>';
+          });
+        }
+        gridHtml += '</tbody>';
+        html.set(query("#waterStation-info-table")[0], gridHtml);
+        // table row click event, highlight the result
+        query("#waterStation-info-table tr").on("click", function (e) {
+          highlightSelectedGraphic(e)
+        });
+      });
     }
 
     function queryUnivercityLayer(name, layerId) {
@@ -613,22 +753,6 @@ require([
         }
 
       });
-    }
-
-    function initGrid(features) {
-      gridHtml = '<tbody>';
-      gridHtml += '<tr>' +
-        '<th>编号</th>' +
-        '<th>名称</th>' +
-        '</tr>';
-      features.forEach(function (feature) {
-        gridHtml += '<tr class="success">' +
-          '<td>' + feature.attributes.编号 + '</td>' +
-          '<td>' + feature.attributes.名称 + '</td>' +
-          '</tr>';
-      });
-      gridHtml += '</tbody>';
-      return gridHtml;
     }
 
     //----------------------------------
