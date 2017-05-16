@@ -186,11 +186,9 @@
       <ul class="dropdown-menu">
         <li><a role="button" data-target="#modalSplash" data-toggle="modal" aria-haspopup="true"><span class="glyphicon glyphicon-thumbs-up"></span> About</a></li>
         <li><a class="hidden-md hidden-lg" href="#2dTab" aria-controls="2Dtab" role="tab" data-toggle="tab"> Map</a></li>
-        <li><a class="visible-xs" role="button" data-target="#panelSearch" aria-haspopup="true"><span class="glyphicon glyphicon-search"></span> Search</a></li>
-        <li><a role="button" data-target="#panelWaterStation" aria-haspopup="true"><span class="glyphicon glyphicon-tint"></span> 降雨测站</a></li>
-        <li><a role="button" data-target="#panelWaterStation" aria-haspopup="true"><span class="glyphicon glyphicon-th-large"></span> 雨量查询</a></li>
-        <li><a role="button" data-target="#panelWaterStation" aria-haspopup="true"><span class="glyphicon glyphicon-th-large"></span> 雨量分析</a></li>
-        <!-- <li><a role="button" data-target="#panelAnalysis" aria-haspopup="true"><span class="glyphicon glyphicon-th-large"></span> 分析</a></li> -->
+        <!-- <li><a class="visible-xs" role="button" data-target="#panelSearch" aria-haspopup="true"><span class="glyphicon glyphicon-search"></span> Search</a></li> -->
+        <li><a role="button" data-target="#panelWaterStation" aria-haspopup="true"><span class="glyphicon glyphicon-tint"></span> 雨量查询</a></li>
+        <li><a role="button" data-target="#panelAnalysis" aria-haspopup="true"><span class="glyphicon glyphicon-th-large"></span> 雨量分析</a></li>
         <li><a role="button" id="calciteToggleNavbar" aria-haspopup="true"><span class="glyphicon glyphicon-fullscreen"></span> 全图显示</a></li>
       </ul>
     </div>
@@ -204,11 +202,11 @@
         <a id="mapNav" class="hidden-xs hidden-sm" href="#2dTab" aria-controls="2Dtab" aria-expanded="true" role="tab" data-toggle="tab"
           data-tooltip="tip" title="2D View" data-placement="bottom">Map</a>
       </li>
-      <li>
+      <!-- <li>
         <div class="calcite-navbar-search calcite-search-expander">
           <div id="searchNavDiv"></div>
         </div>
-      </li>
+      </li> -->
     </ul>
   </nav>
   <!--/.navbar -->
@@ -276,78 +274,13 @@
     </div>
   </div>
 
-  <!-- Bottom Content Panel  -->
-
-  <!--  <div class="calcite-div-content calcite-div-content-bottom">
-    <div class="calcite-div-content-transparent-background calcite-div-content-info-collapse" style="display: none">
-      <div class="calcite-div-content-resultbox-panel">
-        <div class="calcite-div-content-resultbox-panel-content">
-
-          <div class="calcite-div-content-box-container" id="resultContentContainer">
-            <div class="calcite-div-content-info-container">
-              <div class="calcite-div-content-header-container">
-                <div class="calcite-div-content-span-header"><span class="esri-icon-home"></span> 当前站点</div>
-                <div class="calcite-div-content-result-content">
-                  <div>
-                    <div class="calcite-div-content-div-clear"></div>
-                    <div class="calcite-div-content-info-text" id="detail-station-name">监测站名称： </div>
-                    <div class="calcite-div-content-info-text" id="detail-station-area">所在城市： </div>
-                    <div class="calcite-div-content-info-text" id="detail-station-time">数据更新时间： </div>
-                  </div>
-                </div>
-              </div>
-            </div> 
-          </div>
-
-          <div class="calcite-div-content-box-container" id="result2ContentContainer">
-            <div class="calcite-div-content-info-container">
-              <div class="calcite-div-content-header-container">
-                <div>
-                  <div class="calcite-div-content-span-header"><span class="esri-icon-table"></span> 详细指标</div>  
-                </div> 
-                <div class="calcite-div-content-result-content">
-                  <div>
-                    <div class="calcite-div-content-div-clear"></div>
-                    <div class="calcite-div-content-info-text" id="detail-detail-quality">空气质量： </div>
-                    <div class="calcite-div-content-info-text" id="detail-detail-aqi">AQI: </div>
-                    <div class="calcite-div-content-info-text" id="detail-detail-primary-pollutant">首要污染物: </div>
-                    <div class="calcite-div-content-info-text" id="detail-detail-pm25">PM2.5: </div>
-                    <div class="calcite-div-content-info-text" id="detail-detail-pm10">PM10: </div>
-                    <div class="calcite-div-content-info-text" id="detail-detail-co">CO: </div>
-                    <div class="calcite-div-content-info-text" id="detail-detail-no2">NO2: </div>
-                    <div class="calcite-div-content-info-text" id="detail-detail-o3">O3: </div>
-                    <div class="calcite-div-content-info-text" id="detail-detail-so2">SO2: </div>
-                  </div>
-                </div>
-              </div>
-            </div> 
-          </div>
-
-          <div class="calcite-div-content-chart-container" id="result3ContentContainer">
-            <div class="calcite-div-content-info-container">
-              <div class="calcite-div-content-header-container">
-                <div>
-                  <div class="calcite-div-content-span-header"><span class="esri-icon-table"></span> 最近24小时空气质量趋势</div>  
-                </div>
-                <div class="calcite-div-content-result-content">
-                  <div id="chart" style="width: 850px; height: 150px;"></div>
-                </div>
-              </div>
-            </div> 
-          </div>
-
-        </div>
-      </div>
-    </div>   
-  </div> -->
-
   <!-- Panel Container -->
   
   <div class="calcite-panels calcite-panels-right calcite-bgcolor-light-orange calcite-text-dark panel-group" role="tablist" aria-multiselectable="true">
     
     <!-- Panel - Search -->
 
-    <div id="panelSearch" class="panel collapse hidden-sm hidden-md hidden-lg">
+    <!-- <div id="panelSearch" class="panel collapse hidden-sm hidden-md hidden-lg">
       <div id="headingSearch" class="panel-heading" role="tab">
         <div class="panel-title">
           <a class="panel-toggle collapsed" role="button" data-toggle="collapse" href="#collapseSearch" aria-expanded="false" aria-controls="collapseSearch"><span class="glyphicon glyphicon-search" aria-hidden="true"></span><span class="panel-label">Search</span></a> 
@@ -359,100 +292,119 @@
           <div id="searchPanelDiv"></div>
         </div>
       </div>
-    </div>
+    </div>-->
 
-  <!-- Panel - 降雨测站 -->
+    <!-- Panel - Analysis GP -->
 
-    <div id="panelWaterStation" class="panel collapse">
-      <div id="waterStation" class="panel-heading" role="tab">
-          <div class="panel-title">
-            <a class="panel-toggle" role="button" data-toggle="collapse" href="#collapseWaterStation" aria-expanded="false" aria-controls="collapseWaterStation"><span class="glyphicon glyphicon-tint" aria-hidden="true"></span><span class="panel-label">降雨测站</span></a>
-            <a class="panel-close" role="button" data-toggle="collapse" data-target="#panelWaterStation"><span class="esri-icon esri-icon-close" aria-hidden="true"></span></a>
-          </div>
+     <div id="panelAnalysis" class="panel collapse">
+      <div id="headingAnalysis" class="panel-heading" role="tab">
+        <div class="panel-title">
+          <a class="panel-toggle" role="button" data-toggle="collapse" href="#collapseAnalysis" aria-expanded="false" aria-controls="collapseAnalysis"><span class="glyphicon glyphicon-th-large" aria-hidden="true"></span><span class="panel-label">雨量站插值分析</span></a> 
+          <a class="panel-close" role="button" data-toggle="collapse" data-target="#panelAnalysis"><span class="esri-icon esri-icon-close" aria-hidden="true"></span></a>  
+        </div>
       </div>
-      <div id="collapseWaterStation" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingWaterStation">
-        <div class="panel-body calcite-body-expander">
-          <!-- tab - 降雨测站 -->
-          <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="waterStation">
-              <div class="form-horizontal calcite-form-padding">
-                <div class="form-group">
-                  <label for="waterStationSearch" class="col-xs-3 control-label">名称</label>
-                  <div class="col-xs-9">
-                    <div id="waterStationSearchDiv" class="calcite-form-search esri-search esri-widget">
-                      <div role="presentation" class="esri-search__container">
-                        <div class="esri-search__input-container">
-                          <input type="text" placeholder="查找地点名称" aria-label="搜索" class="esri-search__input" id="waterStationSearchInput" role="textbox">
-                        </div>
-                        <div role="button" title="搜索" class="esri-search__submit-button esri-widget-button" tabindex="0"><span aria-hidden="true" role="presentation" class="esri-icon-search"></span><span class="esri-icon-font-fallback-text">搜索</span>
-                        </div>
+      <div id="collapseAnalysis" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingAnalysis">
+        <div class="panel-body">
+          <button type="button" class="btn btn-success btn-lg" id="submitGP" data-dismiss="modal">开始分析</button>
+                      <div>
+                        <label id="gp-status-lable"></label>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div class="form-group">
-                  <label for="waterStationSearch" class="col-xs-3 control-label">日期</label>
-                  <div class="col-xs-9">
-                    <input type="date" class="form-control" value="2016-08-06" id="waterStationDate"/>
+                <!-- Panel - 降雨测站 -->
+
+                <div id="panelWaterStation" class="panel collapse">
+                  <div id="waterStation" class="panel-heading" role="tab">
+                    <div class="panel-title">
+                      <a class="panel-toggle" role="button" data-toggle="collapse" href="#collapseWaterStation" aria-expanded="false" aria-controls="collapseWaterStation"><span class="glyphicon glyphicon-tint" aria-hidden="true"></span><span class="panel-label">降雨测站</span></a>
+                      <a class="panel-close" role="button" data-toggle="collapse" data-target="#panelWaterStation"><span class="esri-icon esri-icon-close" aria-hidden="true"></span></a>
+                    </div>
+                  </div>
+                  <div id="collapseWaterStation" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingWaterStation">
+                    <div class="panel-body calcite-body-expander">
+                      <!-- tab - 降雨测站 -->
+                      <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active" id="waterStation">
+                          <div class="form-horizontal calcite-form-padding">
+                            <div class="form-group">
+                              <label for="waterStationSearch" class="col-xs-3 control-label">名称</label>
+                              <div class="col-xs-9">
+                                <div id="waterStationSearchDiv" class="calcite-form-search esri-search esri-widget">
+                                  <div role="presentation" class="esri-search__container">
+                                    <div class="esri-search__input-container">
+                                      <input type="text" placeholder="查找地点名称" aria-label="搜索" class="esri-search__input" id="waterStationSearchInput" role="textbox">
+                                    </div>
+                                    <div role="button" title="搜索" class="esri-search__submit-button esri-widget-button" tabindex="0"><span aria-hidden="true" role="presentation" class="esri-icon-search"></span><span class="esri-icon-font-fallback-text">搜索</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="form-group">
+                              <label for="waterStationSearch" class="col-xs-3 control-label">日期</label>
+                              <div class="col-xs-9">
+                                <input type="date" class="form-control" value="2016-08-06" id="waterStationDate" />
+                              </div>
+                            </div>
+
+                          </div>
+                          <table id="waterStation-info-table" class="table table-responsive table-hover">
+
+                          </table>
+                        </div>
+                      </div>
+
+                    </div>
                   </div>
                 </div>
-                                
-                </div>
-                <table id="waterStation-info-table" class="table table-responsive table-hover">
 
-                </table>
+
+
               </div>
-            </div>
+              <!-- /.calcite-panels group-->
 
-          </div>
-        </div>
-      </div>
+              <script type="text/javascript">
+                var dojoConfig = {
+                  packages: [{
+                    name: "bootstrap",
+                    location: "/static/vendor/dojo-bootstrap"
+                  },
+                  {
+                    name: "calcite-maps",
+                    location: "/static/js/dojo"
+                    //location: location.pathname.replace(/\/[^/]+$/, "") + "./../../lib/js/dojo"
+                  },
+                  {
+                    name: 'd3',
+                    location: 'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6',
+                    main: 'd3.min'
+                  },
+                  {
+                    name: 'vega',
+                    location: 'https://cdnjs.cloudflare.com/ajax/libs/vega/2.6.1',
+                    main: 'vega.min'
+                  },
+                  {
+                    name: 'cedar',
+                    location: 'https://unpkg.com/arcgis-cedar@0.7.0/dist',
+                    main: 'cedar.min'
+                  }
+                  ]
+                };
+              </script>
 
-
-
-    </div>
-    <!-- /.calcite-panels group-->
-
-    <script type="text/javascript">
-      var dojoConfig = {
-        packages: [{
-          name: "bootstrap",
-          location: "/static/vendor/dojo-bootstrap"
-        },
-        {
-          name: "calcite-maps",
-          location: "/static/js/dojo"
-          //location: location.pathname.replace(/\/[^/]+$/, "") + "./../../lib/js/dojo"
-        },
-        {
-          name: 'd3',
-          location: 'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6',
-          main: 'd3.min'
-        },
-        {
-          name: 'vega',
-          location: 'https://cdnjs.cloudflare.com/ajax/libs/vega/2.6.1',
-          main: 'vega.min'
-        },
-        {
-          name: 'cedar',
-          location: 'https://unpkg.com/arcgis-cedar@0.7.0/dist',
-          main: 'cedar.min'
-        }
-        ]
-      };
-    </script>
-
-    <!-- ArcGIS JS 4.x -->
-    <script src="https://xzdbd.com/static/arcgis/js/4.2/init.js"></script>
-    <script src="/static/js/main.js"></script>
-    <script>
-      require([
-        "dojo/parser",
-        "dijit/form/DateTextBox"
-      ]);
-    </script>
+              <!-- ArcGIS JS 4.x -->
+              <script src="https://xzdbd.com/static/arcgis/js/4.2/init.js"></script>
+              <script src="/static/js/main.js"></script>
+              <script>
+                require([
+                  "dojo/parser",
+                  "dijit/form/DateTextBox"
+                ]);
+              </script>
 
 </body>
 

@@ -120,7 +120,7 @@ require([
     //----------------------------------
     initializeLoadingOverlay();
     initializeMapViews();
-    initializeStationLayer();
+    //initializeStationLayer();
     initializeAppUI();
 
 
@@ -188,6 +188,9 @@ require([
       // adds the home widget to the top left corner of the MapView
       app.mapView.ui.add(homeWidget, "top-left");
 
+      var highlightGraphicsLayer = new GraphicsLayer();
+      app.highlightGraphicsLayer = highlightGraphicsLayer;
+      
       app.activeView = app.mapView;
 
       app.mapView.then(function () {
@@ -312,6 +315,7 @@ require([
       setPopupEvents();
       setResultContentEvents();
       setQueryEvents();
+      setAnalysisEvents();
     }
 
     //----------------------------------
@@ -504,6 +508,7 @@ require([
       query(".calcite-panels .panel").on("hide.bs.collapse", function (e) {
         // TODO: switch case
         console.log(e.target.id);
+        app.mapView.map.layers.remove(app.graphicsLayer);
       });
 
       // search input enter event, update graphicsLayer
@@ -752,6 +757,44 @@ require([
           });
         }
 
+      });
+    }
+
+    //----------------------------------
+    // Analysis events
+    //----------------------------------
+    function setAnalysisEvents() {
+      var gpResultImageLayer;
+
+      query("#submitGP").on("click", function (e) {
+        var gp = new Geoprocessor("https://gis.xzdbd.com/arcgis/rest/services/dev/rain_analysis/GPServer/rain_idw");
+          var params = {
+            Output_cell_size: "100"
+          };
+          gp.submitJob(params).then(draw, errBack, progTest);
+
+          function draw(result) {
+            console.log(result);
+            query('#gp-status-lable')[0].innerHTML = "分析任务执行完成";
+            gpResultImageLayer = gp.getResultMapImageLayer(result.jobId);
+            gpResultImageLayer.opacity = 0.8;
+            app.mapView.map.layers.add(gpResultImageLayer);
+          }
+
+          function progTest(value) {
+            console.log(value.jobStatus);
+            query('#gp-status-lable')[0].innerHTML = "分析任务执行中...";
+          }
+
+          function errBack(err) {
+            console.log("gp error: ", err);
+          }
+        });
+
+        // hide feature layer when panel closes
+      query(".calcite-panels #panelAnalysis").on("hide.bs.collapse", function (e) {
+        // TODO: switch case
+        app.mapView.map.layers.remove(gpResultImageLayer);
       });
     }
 
