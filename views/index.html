@@ -187,7 +187,9 @@
         <li><a role="button" data-target="#modalSplash" data-toggle="modal" aria-haspopup="true"><span class="glyphicon glyphicon-thumbs-up"></span> About</a></li>
         <li><a class="hidden-md hidden-lg" href="#2dTab" aria-controls="2Dtab" role="tab" data-toggle="tab"> Map</a></li>
         <!-- <li><a class="visible-xs" role="button" data-target="#panelSearch" aria-haspopup="true"><span class="glyphicon glyphicon-search"></span> Search</a></li> -->
-        <li><a role="button" data-target="#panelWaterStation" aria-haspopup="true"><span class="glyphicon glyphicon-tint"></span> 雨量查询</a></li>
+        <li><a role="button" data-target="#panelWaterStation" aria-haspopup="true"><span class="glyphicon glyphicon-tint"></span> 一般查询</a></li>
+        <li><a role="button" data-target="#panelWaterStationMonth" aria-haspopup="true"><span class="glyphicon glyphicon-tint"></span> 月降雨量</a></li>
+        <li><a role="button" data-target="#panelWaterStationYear" aria-haspopup="true"><span class="glyphicon glyphicon-tint"></span> 年降雨量</a></li>
         <li><a role="button" data-target="#panelAnalysis" aria-haspopup="true"><span class="glyphicon glyphicon-th-large"></span> 雨量分析</a></li>
         <li><a role="button" id="calciteToggleNavbar" aria-haspopup="true"><span class="glyphicon glyphicon-fullscreen"></span> 全图显示</a></li>
       </ul>
@@ -305,6 +307,12 @@
       </div>
       <div id="collapseAnalysis" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingAnalysis">
         <div class="panel-body">
+          <div class="form-group">
+              <label for="waterStationSearch" class="col-xs-3 control-label">年份</label>
+              <div class="col-xs-9">
+              <input type="number" class="form-control" id="analysisYear" value="2016" min="2014" max="2016" />
+              </div>
+          </div>
           <button type="button" class="btn btn-success btn-lg" id="submitGP" data-dismiss="modal">开始分析</button>
                       <div>
                         <label id="gp-status-lable"></label>
@@ -352,6 +360,102 @@
 
                           </div>
                           <table id="waterStation-info-table" class="table table-responsive table-hover">
+
+                          </table>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+
+                <!-- Panel - 降雨测站  按月-->
+
+                <div id="panelWaterStationMonth" class="panel collapse">
+                  <div id="waterStation" class="panel-heading" role="tab">
+                    <div class="panel-title">
+                      <a class="panel-toggle" role="button" data-toggle="collapse" href="#collapseWaterStation" aria-expanded="false" aria-controls="collapseWaterStation"><span class="glyphicon glyphicon-tint" aria-hidden="true"></span><span class="panel-label">降雨测站</span></a>
+                      <a class="panel-close" role="button" data-toggle="collapse" data-target="#panelWaterStationMonth"><span class="esri-icon esri-icon-close" aria-hidden="true"></span></a>
+                    </div>
+                  </div>
+                  <div id="collapseWaterStation" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingWaterStation">
+                    <div class="panel-body calcite-body-expander">
+                      <!-- tab - 降雨测站 -->
+                      <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active" id="waterStation">
+                          <div class="form-horizontal calcite-form-padding">
+                            <div class="form-group">
+                              <label for="waterStationSearch" class="col-xs-3 control-label">名称</label>
+                              <div class="col-xs-9">
+                                <div id="waterStationSearchDiv" class="calcite-form-search esri-search esri-widget">
+                                  <div role="presentation" class="esri-search__container">
+                                    <div class="esri-search__input-container">
+                                      <input type="text" placeholder="查找地点名称" aria-label="搜索" class="esri-search__input" id="waterStationSearchInputMonth" role="textbox">
+                                    </div>
+                                    <div role="button" title="搜索" class="esri-search__submit-button esri-widget-button" tabindex="0"><span aria-hidden="true" role="presentation" class="esri-icon-search"></span><span class="esri-icon-font-fallback-text">搜索</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="form-group">
+                              <label for="waterStationSearchMonth" class="col-xs-3 control-label">月份</label>
+                              <div class="col-xs-9">
+                                <input type="month" class="form-control" value="2016-08" id="waterStationMonth" />
+                              </div>
+                            </div>
+
+                          </div>
+                          <table id="waterStation-info-table-month" class="table table-responsive table-hover">
+                          </table>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Panel - 降雨测站  按年 -->
+
+                <div id="panelWaterStationYear" class="panel collapse">
+                  <div id="waterStation" class="panel-heading" role="tab">
+                    <div class="panel-title">
+                      <a class="panel-toggle" role="button" data-toggle="collapse" href="#collapseWaterStation" aria-expanded="false" aria-controls="collapseWaterStation"><span class="glyphicon glyphicon-tint" aria-hidden="true"></span><span class="panel-label">降雨测站</span></a>
+                      <a class="panel-close" role="button" data-toggle="collapse" data-target="#panelWaterStationYear"><span class="esri-icon esri-icon-close" aria-hidden="true"></span></a>
+                    </div>
+                  </div>
+                  <div id="collapseWaterStation" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingWaterStation">
+                    <div class="panel-body calcite-body-expander">
+                      <!-- tab - 降雨测站 -->
+                      <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active" id="waterStation">
+                          <div class="form-horizontal calcite-form-padding">
+                            <div class="form-group">
+                              <label for="waterStationSearch" class="col-xs-3 control-label">名称</label>
+                              <div class="col-xs-9">
+                                <div id="waterStationSearchDiv" class="calcite-form-search esri-search esri-widget">
+                                  <div role="presentation" class="esri-search__container">
+                                    <div class="esri-search__input-container">
+                                      <input type="text" placeholder="查找地点名称" aria-label="搜索" class="esri-search__input" id="waterStationSearchInputYear" role="textbox">
+                                    </div>
+                                    <div role="button" title="搜索" class="esri-search__submit-button esri-widget-button" tabindex="0"><span aria-hidden="true" role="presentation" class="esri-icon-search"></span><span class="esri-icon-font-fallback-text">搜索</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="form-group">
+                              <label for="waterStationSearch" class="col-xs-3 control-label">年份</label>
+                              <div class="col-xs-9">
+                                <input type="number" class="form-control" id="waterStationYear" value="2016" min="2014" max="2016" />
+                              </div>
+                            </div>
+
+                          </div>
+                          <table id="waterStation-info-table-year" class="table table-responsive table-hover">
 
                           </table>
                         </div>

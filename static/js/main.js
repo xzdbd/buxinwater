@@ -167,7 +167,7 @@ require([
     function initializeMapViews() {
       // define basemap
       var fuxinwaterBasemap = new TileLayer({
-        url: "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater/MapServer"
+        url: "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater_geodatabase/MapServer"
       });
 
       app.mapView = new MapView({
@@ -190,7 +190,7 @@ require([
 
       var highlightGraphicsLayer = new GraphicsLayer();
       app.highlightGraphicsLayer = highlightGraphicsLayer;
-      
+
       app.activeView = app.mapView;
 
       app.mapView.then(function () {
@@ -269,7 +269,7 @@ require([
         }]
       };
 
-      var layer = "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater/MapServer/0";
+      var layer = "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater_geodatabase/MapServer/0";
       var queryTask = new QueryTask({
         url: layer
       });
@@ -499,8 +499,19 @@ require([
     function setQueryEvents() {
       // show feature layer when panel opens
       query(".calcite-panels #panelWaterStation").on("show.bs.collapse", function (e) {
-        console.log("panelWaterStation")
         updateGraphicsLayer();
+
+      });
+
+      // show feature layer when panel opens Month
+      query(".calcite-panels #panelWaterStationMonth").on("show.bs.collapse", function (e) {
+        updateGraphicsLayerMonth();
+
+      });
+
+      // show feature layer when panel opens Month
+      query(".calcite-panels #panelWaterStationYear").on("show.bs.collapse", function (e) {
+        updateGraphicsLayerYear();
 
       });
 
@@ -509,6 +520,7 @@ require([
         // TODO: switch case
         console.log(e.target.id);
         app.mapView.map.layers.remove(app.graphicsLayer);
+        app.mapView.map.layers.remove(app.highlightGraphicsLayer);
       });
 
       // search input enter event, update graphicsLayer
@@ -523,6 +535,29 @@ require([
         updateGraphicsLayer();
       });
 
+      // search input enter event, update graphicsLayer
+      query("#waterStationSearchInputMonth").on("keydown", function (event) {
+        if (event.keyCode == keys.ENTER) {
+          updateGraphicsLayerMonth();
+        }
+      });
+
+      // date control change event, update graphicsLayer
+      query("#waterStationMonth").on("change", function (event) {
+        updateGraphicsLayerMonth();
+      });
+
+      // search input enter event, update graphicsLayer
+      query("#waterStationSearchInputYear").on("keydown", function (event) {
+        if (event.keyCode == keys.ENTER) {
+          updateGraphicsLayerYear();
+        }
+      });
+
+      // date control change event, update graphicsLayer
+      query("#waterStationYear").on("change", function (event) {
+        updateGraphicsLayerYear();
+      });
     }
 
     function highlightSelectedGraphic(e) {
@@ -602,7 +637,7 @@ require([
         }]
       };
 
-      var layer = "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater/MapServer/0";
+      var layer = "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater_geodatabase/MapServer/0";
       var queryTask = new QueryTask({
         url: layer
       });
@@ -636,6 +671,202 @@ require([
 
     }
 
+    function updateGraphicsLayerMonth() {
+      // remove graphics
+      app.mapView.map.remove(app.graphicsLayer);
+      app.mapView.map.layers.remove(app.highlightGraphicsLayer);
+
+      var keywords = query("#waterStationSearchInputMonth")[0].value;
+      var rainMonth = query("#waterStationMonth")[0].value;
+      var year = rainMonth.substring(0, rainMonth.indexOf("-"));
+      var month = rainMonth.substring(rainMonth.indexOf("-") + 1, rainMonth.length);
+
+      var graphicsLayer = new GraphicsLayer();
+      app.graphicsLayer = graphicsLayer;
+      var rainStationSymbol = new PictureMarkerSymbol({
+        url: "./static/images/rain.png",
+        width: "30px",
+        height: "37.5px",
+      });
+
+      var template = {
+        title: "<font color='#008000'>监测站：{站名}",
+
+        content: [{
+          type: "fields",
+          fieldInfos: [{
+            fieldName: "站码",
+            visible: true,
+            label: "站码",
+          }, {
+            fieldName: "站名",
+            visible: true,
+            label: "站名",
+          }, {
+            fieldName: "乡镇",
+            visible: true,
+            label: "乡镇",
+          }, {
+            fieldName: "地点",
+            visible: true,
+            label: "地点",
+          }],
+        }],
+        actions: [{
+          title: "详情",
+          id: "detail",
+          className: "esri-icon-dashboard",
+        }]
+      };
+
+      var layer = "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater_geodatabase/MapServer/0";
+      var queryTask = new QueryTask({
+        url: layer
+      });
+      var query1 = new Query();
+      query1.returnGeometry = true;
+      query1.outFields = ["*"];
+
+      if (keywords != "" && !isNaN(keywords)) {
+        query1.where = "站码 = " + keywords + " OR 站名 like '%" + keywords + "%'";
+      } else {
+        query1.where = "站名 like '%" + keywords + "%'";
+      }
+
+
+      queryTask.execute(query1, { cacheBust: false }).then(function (result) {
+        if (result.features.length > 0) {
+          //initResultGrid(result.features, rainDate);
+          //html.set(query("#waterStation-info-table")[0], htmlTemplate);
+          result.features.forEach(function (graphic) {
+            graphic.symbol = rainStationSymbol;
+            graphic.popupTemplate = template;
+            graphicsLayer.add(graphic);
+          });
+          app.mapView.map.add(graphicsLayer);
+          // remove loading
+          app.loading.endLoading();
+        } else {
+          html.set(query("#waterStation-info-table-month")[0], "<p>未找到站点信息</p>");
+        }
+
+        var stationIds = "";
+        // get all stationIds
+        result.features.forEach(function (feature) {
+          stationIds += feature.attributes.站码 + ",";
+        });
+        stationIds = stationIds.substr(0, stationIds.length - 1);
+
+        request.post("./index?year=" + year + "&month=" + month + "&stationIds=" + stationIds, {
+          handleAs: "json"
+        }).then(function (gridHtml) {
+          html.set(query("#waterStation-info-table-month")[0], gridHtml);
+          // table row click event, highlight the result
+          query("#waterStation-info-table-month tr").on("click", function (e) {
+            highlightSelectedGraphic(e)
+          });
+        });
+      });
+
+    }
+
+    function updateGraphicsLayerYear() {
+      // remove graphics
+      app.mapView.map.remove(app.graphicsLayer);
+      app.mapView.map.layers.remove(app.highlightGraphicsLayer);
+
+      var keywords = query("#waterStationSearchInputYear")[0].value;
+      var year = query("#waterStationYear")[0].value;
+
+      var graphicsLayer = new GraphicsLayer();
+      app.graphicsLayer = graphicsLayer;
+      var rainStationSymbol = new PictureMarkerSymbol({
+        url: "./static/images/rain.png",
+        width: "30px",
+        height: "37.5px",
+      });
+
+      var template = {
+        title: "<font color='#008000'>监测站：{站名}",
+
+        content: [{
+          type: "fields",
+          fieldInfos: [{
+            fieldName: "站码",
+            visible: true,
+            label: "站码",
+          }, {
+            fieldName: "站名",
+            visible: true,
+            label: "站名",
+          }, {
+            fieldName: "乡镇",
+            visible: true,
+            label: "乡镇",
+          }, {
+            fieldName: "地点",
+            visible: true,
+            label: "地点",
+          }],
+        }],
+        actions: [{
+          title: "详情",
+          id: "detail",
+          className: "esri-icon-dashboard",
+        }]
+      };
+
+      var layer = "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater_geodatabase/MapServer/0";
+      var queryTask = new QueryTask({
+        url: layer
+      });
+      var query1 = new Query();
+      query1.returnGeometry = true;
+      query1.outFields = ["*"];
+
+      if (keywords != "" && !isNaN(keywords)) {
+        query1.where = "站码 = " + keywords + " OR 站名 like '%" + keywords + "%'";
+      } else {
+        query1.where = "站名 like '%" + keywords + "%'";
+      }
+
+
+      queryTask.execute(query1, { cacheBust: false }).then(function (result) {
+        if (result.features.length > 0) {
+          //initResultGrid(result.features, rainDate);
+          //html.set(query("#waterStation-info-table")[0], htmlTemplate);
+          result.features.forEach(function (graphic) {
+            graphic.symbol = rainStationSymbol;
+            graphic.popupTemplate = template;
+            graphicsLayer.add(graphic);
+          });
+          app.mapView.map.add(graphicsLayer);
+          // remove loading
+          app.loading.endLoading();
+        } else {
+          html.set(query("#waterStation-info-table-year")[0], "<p>未找到站点信息</p>");
+        }
+
+        var stationIds = "";
+        // get all stationIds
+        result.features.forEach(function (feature) {
+          stationIds += feature.attributes.站码 + ",";
+        });
+        stationIds = stationIds.substr(0, stationIds.length - 1);
+
+        request.post("./index?year=" + year + "&stationIds=" + stationIds, {
+          handleAs: "json"
+        }).then(function (gridHtml) {
+          html.set(query("#waterStation-info-table-year")[0], gridHtml);
+          // table row click event, highlight the result
+          query("#waterStation-info-table-year tr").on("click", function (e) {
+            highlightSelectedGraphic(e)
+          });
+        });
+      });
+
+    }
+
     function initResultGrid(features, rainDate) {
       var gridHtml = '<tbody>';
       gridHtml += '<tr>' +
@@ -649,10 +880,10 @@ require([
       features.forEach(function (feature) {
         stationIds += feature.attributes.站码 + ",";
       });
-      stationIds = stationIds.substr(0, stationIds.length - 2);
+      stationIds = stationIds.substr(0, stationIds.length - 1);
 
       //query rain info
-      var layer = "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater/MapServer/8";
+      var layer = "https://gis.xzdbd.com/arcgis/rest/services/dev/fuxinwater_geodatabase/MapServer/8";
       var queryTask = new QueryTask({
         url: layer
       });
@@ -662,8 +893,10 @@ require([
       queryRain.where = "站号 in (" + stationIds + ") and 日期 = timestamp '" + rainDate + "'";
 
       queryTask.execute(queryRain).then(function (result) {
+        var totalRain = 0;
         if (result.features.length > 0) {
           result.features.forEach(function (feature) {
+            totalRain += feature.attributes.雨量;
             gridHtml += '<tr>' +
               '<td>' + feature.attributes.站名 + '</td>' +
               '<td>' + feature.attributes.雨量 + '</td>' +
@@ -672,6 +905,7 @@ require([
           });
         } else {
           features.forEach(function (feature) {
+            totalRain += feature.attributes.雨量;
             gridHtml += '<tr>' +
               '<td>' + feature.attributes.站名 + '</td>' +
               '<td>' + 0 + '</td>' +
@@ -679,6 +913,7 @@ require([
               '</tr>';
           });
         }
+        gridHtml += '<tr><td colspan="3" style="text-align:right;">总计雨量:' + totalRain + '</td></tr>'
         gridHtml += '</tbody>';
         html.set(query("#waterStation-info-table")[0], gridHtml);
         // table row click event, highlight the result
@@ -688,88 +923,23 @@ require([
       });
     }
 
-    function queryUnivercityLayer(name, layerId) {
-      var universityGraphicsLayer = new GraphicsLayer({
-        id: "graphicsLayer" + layerId
-      });
-      var highlightGraphicsLayer = new GraphicsLayer({
-        id: "highlightGraphicsLayer" + layerId
-      });
-      var htmlTemplate = "";
-      var universityLayer = "https://gis.xzdbd.com/arcgis/rest/services/dev/university/MapServer/" + layerId;
-      var queryTask = new QueryTask({
-        url: universityLayer
-      });
-      var query1 = new Query();
-      query1.returnGeometry = true;
-      query1.outFields = ["名称", "编号"];
-      query1.where = "名称 like '%" + name + "%'";
-
-      queryTask.execute(query1).then(function (result) {
-        htmlTemplate = initGrid(result.features);
-        result.features.forEach(function (graphic) {
-          if (graphic.geometry.type == "polygon") {
-            graphic.symbol = new SimpleFillSymbol({
-              color: [0, 255, 0, 1],
-              outline: {
-                color: [128, 128, 128],
-                width: 1
-              }
-            });
-          } else if (graphic.geometry.type == "polyline") {
-            graphic.symbol = new SimpleLineSymbol({
-              width: 1,
-              color: [64, 255, 0]
-            });
-          }
-
-          graphic.popupTemplate = new PopupTemplate({
-            title: "{名称}",
-            content: "<p>ID: {编号}</p><p>名称： {名称}</p>"
-          });
-
-          universityGraphicsLayer.add(graphic);
-        });
-        app.mapView.map.layers.add(universityGraphicsLayer);
-        html.set(query("#adminBuilding-info-table")[0], htmlTemplate);
-        query("#adminBuilding-info-table tr").on("click", function (e) {
-          highlightSelectedGraphic(e)
-        });
-
-        function highlightSelectedGraphic(e) {
-          highlightGraphicsLayer.removeAll();
-          app.mapView.map.layers.remove(highlightGraphicsLayer);
-          id = e.target.parentElement.firstElementChild.innerHTML;
-          universityGraphicsLayer.graphics.forEach(function (graphic) {
-            if (graphic.attributes.编号 == id) {
-              graphic.symbol = new SimpleFillSymbol({
-                color: [0, 255, 0, 1],
-                outline: {
-                  color: [255, 51, 153],
-                  width: 3
-                }
-              });
-              highlightGraphicsLayer.add(graphic);
-              app.mapView.map.layers.add(highlightGraphicsLayer);
-              app.mapView.extent = graphic.geometry.extent;
-              app.mapView.scale = app.mapView.scale * 10;
-            }
-          });
-        }
-
-      });
-    }
 
     //----------------------------------
     // Analysis events
     //----------------------------------
     function setAnalysisEvents() {
-      var gpResultImageLayer;
-
       query("#submitGP").on("click", function (e) {
-        var gp = new Geoprocessor("https://gis.xzdbd.com/arcgis/rest/services/dev/rain_analysis/GPServer/rain_idw");
+        var gpResultImageLayer;
+        query('#gp-status-lable')[0].innerHTML = "计算年雨量中...";
+        var year = query("#analysisYear")[0].value;
+        request.post("./index?year=" + year + "&updateRain=true", {
+          handleAs: "json"
+        }).then(function (result) {
+          console.log(result);
+
+          var gp = new Geoprocessor("https://gis.xzdbd.com/arcgis/rest/services/dev/rain_analysis_geodatabase/GPServer/rain_idw");
           var params = {
-            Output_cell_size: "100"
+            Output_cell_size: "200"
           };
           gp.submitJob(params).then(draw, errBack, progTest);
 
@@ -792,67 +962,11 @@ require([
         });
 
         // hide feature layer when panel closes
-      query(".calcite-panels #panelAnalysis").on("hide.bs.collapse", function (e) {
-        // TODO: switch case
-        app.mapView.map.layers.remove(gpResultImageLayer);
+        query(".calcite-panels #panelAnalysis").on("hide.bs.collapse", function (e) {
+          // TODO: switch case
+          app.mapView.map.layers.remove(gpResultImageLayer);
+        });
       });
     }
 
-    //----------------------------------
-    // Chart
-    //----------------------------------
-    function updateChartInfo(stationId) {
-      var chartData
-      if (stationId != null) {
-        request.post("./pollution/chart?id=" + stationId, {
-          handleAs: "json"
-        }).then(function (data) {
-          /*var features = {
-            "features": [{ "attributes": { "name": "111", "aqi": 32 } },
-            { "attributes": { "name": "222", "aqi": 42 } }]
-          };*/
-          var features = { "features": [] }
-          data.forEach(function (data) {
-            features.features.push({ "attributes": { "time_point": getUnixTimestamp(getLocalTime(data.time_point)), "aqi": data.aqi, "full_time": formatFullDate(getLocalTime(data.time_point)) } })
-          })
-          var chart = new Cedar({ "type": "time" });
-          var dataset = {
-            "data": features,
-            "mappings": {
-              "time": { "field": "time_point", "label": "time" },
-              "value": { "field": "aqi", "label": "aqi" },
-              "sort": "full_time ASC",
-            }
-          };
-
-          chart.dataset = dataset;
-
-          chart.tooltip = {
-            "title": "{full_time}",
-            "content": "AQI: {aqi}"
-          }
-
-          chart.show({
-            elementId: "#chart",
-          });
-        });
-      }
-
-      function getLocalTime(time) {
-        return new Date(time);
-      }
-
-      function formatSimpleDate(date) {
-        return locale.format(date, { selector: "time", timePattern: 'H' });
-      };
-
-      function formatFullDate(date) {
-        return locale.format(date, { datePattern: 'yyyy-MM-d', timePattern: 'HH:mm' });
-      };
-
-      function getUnixTimestamp(date) {
-        return date.getTime()
-      }
-
-    }
   });
