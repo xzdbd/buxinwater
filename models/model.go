@@ -24,11 +24,9 @@ func init() {
 	orm.RegisterDataBase("default", "postgres", beego.AppConfig.String("spatialdbconnection"))
 	orm.SetMaxIdleConns("default", 30)
 	orm.DefaultTimeLoc = time.UTC
-	orm.Debug = true
 }
 
 func GetRainInfoByMonth(year string, month string, stationIds string) (rainInfos []RainInfo, err error) {
-	beego.Trace("stationIds", stationIds)
 	o := orm.NewOrm()
 	num, err := o.Raw("select sum(雨量) as rain, 站名 as name from rains where extract(year from 日期) = ? and extract(month from 日期) = ? and 站号 in ("+stationIds+") group by 站名;", year, month).QueryRows(&rainInfos)
 	if err != nil {
@@ -41,7 +39,6 @@ func GetRainInfoByMonth(year string, month string, stationIds string) (rainInfos
 }
 
 func GetRainInfoByYear(year string, stationIds string) (rainInfos []RainInfo, err error) {
-	beego.Trace("stationIds", stationIds)
 	o := orm.NewOrm()
 	num, err := o.Raw("select sum(雨量) as rain, 站名 as name from rains where extract(year from 日期) = ? and 站号 in ("+stationIds+") group by 站名;", year).QueryRows(&rainInfos)
 	if err != nil {
